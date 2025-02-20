@@ -1,8 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const helmet = require("helmet");
-const compression = require("compression");
 const morgan = require("morgan");
 const connectDB = require("./config/db");
 
@@ -14,35 +12,31 @@ connectDB();
 
 const app = express();
 
-// ✅ Middleware
-app.use(express.json());
+// Middleware
 app.use(cors());
-app.use(helmet());
-app.use(compression());
-app.use(morgan("dev")); // Logs requests
+app.use(express.json());
+app.use(morgan("dev"));
 
-// ✅ Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/availability", require("./routes/availabilityRoutes"));
-app.use("/api/admin", require("./routes/adminRoutes"));
-app.use("/api/schedule", require("./routes/scheduleRoutes"));
+// Import Routes
+const authRoutes = require("./routes/authRoutes");
+const availabilityRoutes = require("./routes/availabilityRoutes");
+const scheduleRoutes = require("./routes/scheduleRoutes");
 
-// ✅ Root Route
+// Register Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/availability", availabilityRoutes);
+app.use("/api/schedule", scheduleRoutes);
+
+// Root Route
 app.get("/", (req, res) => {
-  res.send("🚀 Smart Auto-Scheduling System API is running...");
+  res.send("SaaS-ES Backend is running...");
 });
 
-// ✅ 404 Error Handling
+// Handle 404 Routes
 app.use((req, res) => {
   res.status(404).json({ message: "API route not found" });
 });
 
-// ✅ Global Error Handler
-app.use((err, req, res, next) => {
-  console.error("Server Error:", err);
-  res.status(500).json({ message: "Internal Server Error" });
-});
-
-// ✅ Start Server
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
