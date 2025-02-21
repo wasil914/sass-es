@@ -4,13 +4,13 @@ const { updateAvailability, getAvailability, getShiftNotification } = require(".
 
 const router = express.Router();
 
-// ✅ Update availability & recalculate shifts
-router.post("/set", protect, updateAvailability); // 🔹 Corrected path
-
-// ✅ Get employee's availability
+// ✅ Get Employee Availability
 router.get("/", protect, getAvailability);
 
-// ✅ Get shift notifications
+// ✅ Update Employee Availability
+router.post("/set", protect, updateAvailability);
+
+// ✅ Get Shift Notifications (If Preferences Not Met)
 router.get("/notifications", protect, getShiftNotification);
 
 module.exports = router;

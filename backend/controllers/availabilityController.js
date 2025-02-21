@@ -76,6 +76,24 @@ const updateAvailability = async (req, res) => {
   const userId = req.user.id;
 
   try {
+    // ✅ Validate max hours per week (between 10 - 50 hours)
+    if (maxHoursPerWeek < 10 || maxHoursPerWeek > 50) {
+      return res.status(400).json({ message: "❌ Max hours per week must be between 10 and 50." });
+    }
+
+    // ✅ Validate `preferredShifts` to ensure it contains valid shift types
+    const validShifts = ["morning", "afternoon", "night", "none"];
+    for (let day in preferredShifts) {
+      if (!validShifts.includes(preferredShifts[day])) {
+        return res.status(400).json({ message: `❌ Invalid shift type for ${day}: ${preferredShifts[day]}` });
+      }
+    }
+
+    // ✅ Ensure `daysOff` is an array
+    if (!Array.isArray(daysOff)) {
+      return res.status(400).json({ message: "❌ Days off must be an array." });
+    }
+
     let availability = await Availability.findOne({ user: userId });
 
     if (availability) {
@@ -92,7 +110,9 @@ const updateAvailability = async (req, res) => {
 
     // ✅ Recalculate schedule dynamically
     const scheduleUpdated = await generateSchedule();
-    if (!scheduleUpdated) throw new Error("Failed to recalculate shifts");
+    if (!scheduleUpdated) {
+      return res.status(500).json({ message: "❌ Failed to recalculate shifts." });
+    }
 
     res.status(200).json({ message: "✅ Availability updated & shifts recalculated", availability });
   } catch (error) {
@@ -106,7 +126,9 @@ const getAvailability = async (req, res) => {
   try {
     const availability = await Availability.findOne({ user: req.user.id });
 
-    if (!availability) return res.status(404).json({ message: "No availability set" });
+    if (!availability) {
+      return res.status(404).json({ message: "⚠️ No availability set yet." });
+    }
 
     res.status(200).json(availability);
   } catch (error) {
